@@ -1,5 +1,5 @@
 library(dplyr)
-# library(readr)
+library(readr)
 library(shiny)
 library(leaflet)
 library(maps)
@@ -70,8 +70,15 @@ labs <- lapply(seq(nrow(data_2019)), function(i) {
 pal <- colorBin("YlOrRd", domain = data_2019$usd_price)
 
 ui <- fluidPage(
-  titlePanel(
-    title = "The Big Mac Index"
+  
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "bootstrap.css"),
+    tags$link(rel = "stylesheet", type = "text/css", href = "shiny-big-mac.css")
+  ),
+  
+  tags$div(
+      class = "navbar navbar-expand-lg navbar-dark bg-primary",
+      h1("The Big Mac Index")
   ),
   sidebarPanel(
     width = 3,
