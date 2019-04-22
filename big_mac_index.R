@@ -1,6 +1,7 @@
 library(dplyr)
 library(readr)
 library(shiny)
+library(shinythemes)
 library(leaflet)
 library(maps)
 library(sp)
@@ -69,31 +70,30 @@ labs <- lapply(seq(nrow(data_2019)), function(i) {
 # bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
 pal <- colorBin("YlOrRd", domain = data_2019$usd_price)
 
-ui <- fluidPage(
-  
-  tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "bootstrap.css"),
-    tags$link(rel = "stylesheet", type = "text/css", href = "shiny-big-mac.css")
-  ),
-  
-  tags$div(
-      class = "navbar navbar-expand-lg navbar-dark bg-primary",
-      h1("The Big Mac Index")
-  ),
-  sidebarPanel(
-    width = 3,
-    h2("Yo")
-  ),
-  mainPanel(
-    width = 9,
-    tabsetPanel(type = "tabs",
-                tabPanel("Map",
-                  leafletOutput("big_mac_map",
-                                height = 720)
-                ),
-                tabPanel("Table",
-                         dataTableOutput("big_mac_data"))
-    )
+ui <- fluidPage(theme = shinytheme("yeti"),
+                # shinythemes::themeSelector(),
+  navbarPage("The Big Mac Index",
+             tabPanel("Map",
+                      sidebarPanel(
+                        width = 3,
+                        h2("Yo Map")
+                      ),
+                      mainPanel(
+                        width = 9,
+                        leafletOutput("big_mac_map",
+                                      height = 720)
+                      )
+             ),
+             tabPanel("Table",
+                      sidebarPanel(
+                        width = 3,
+                        h2("Yo Table")
+                      ),
+                      mainPanel(
+                        width = 9,
+                        dataTableOutput("big_mac_data")
+                      )
+             )
   )
 )
 
