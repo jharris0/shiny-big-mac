@@ -76,7 +76,12 @@ ui <- fluidPage(theme = shinytheme("yeti"),
              tabPanel("Map",
                       sidebarPanel(
                         width = 3,
-                        h2("Yo Map")
+                          selectInput("date", "Date:",
+                                      choices=unique(data_2019$date)),
+                        h4("Top 5 Cheapest"),
+                        tableOutput("least_expensive"),
+                        h4("Top 5 Most Expensive"),
+                        tableOutput("most_expensive")
                       ),
                       mainPanel(
                         width = 9,
@@ -98,6 +103,14 @@ ui <- fluidPage(theme = shinytheme("yeti"),
 )
 
 server <- function(input, output, session) {
+  output$least_expensive <- renderTable(
+    data_2019 %>% arrange(usd_price) %>% top_n(-5, usd_price) %>% select("Country" = name, "Price (USD)" = usd_price)
+  )
+  
+  output$most_expensive <- renderTable(
+    data_2019 %>% arrange(-usd_price) %>% top_n(5, usd_price) %>% select("Country" = name, "Price (USD)" = usd_price)
+  )
+  
   output$big_mac_map <- renderLeaflet({
     leaflet(target) %>%
       addTiles() %>%
