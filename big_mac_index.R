@@ -7,6 +7,7 @@ library(maps)
 library(sp)
 library(maptools)
 library(DT)
+library(qwraps2)
 
 data <- read_csv("https://raw.githubusercontent.com/TheEconomist/big-mac-data/master/source-data/big-mac-source-data.csv")
 
@@ -67,40 +68,35 @@ labs <- lapply(seq(nrow(data_2019)), function(i) {
 
 # what to do with: euro zone, hong kong, present in data set but not world_map?
 
-# bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
+bins <- c(1, 2, 3, 4, 5, 6, Inf)
 pal <- colorBin("YlOrRd", domain = data_2019$usd_price)
 
 ui <- fluidPage(theme = shinytheme("yeti"),
                 # shinythemes::themeSelector(),
-  navbarPage("The Big Mac Index",
-             tabPanel("Map",
-                      sidebarPanel(
-                        width = 3,
-                          selectInput("date", "Date:",
-                                      choices=unique(data_2019$date)),
-                        h4("Top 5 Cheapest"),
-                        tableOutput("least_expensive"),
-                        h4("Top 5 Most Expensive"),
-                        tableOutput("most_expensive")
-                      ),
-                      mainPanel(
-                        width = 9,
-                        leafletOutput("big_mac_map",
-                                      height = 720)
-                      )
-             ),
-             tabPanel("Table",
-                      sidebarPanel(
-                        width = 3,
-                        h2("Yo Table")
-                      ),
-                      mainPanel(
-                        width = 9,
-                        dataTableOutput("big_mac_data")
-                      )
-             )
-  )
-)
+                navbarPage("The Big Mac Index",
+                           fluidRow(
+                             column(
+                               3,
+                               wellPanel(selectInput(
+                                 "date", "Date:",
+                                 choices = unique(data_2019$date)
+                               )),
+                               wellPanel(h4("Top 5 Cheapest"),
+                                         tableOutput("least_expensive")),
+                               wellPanel(h4("Top 5 Most Expensive"),
+                                         tableOutput("most_expensive"))
+                             ),
+                             column(9,
+                                    tabsetPanel(
+                                      tabPanel("Map",
+                                               leafletOutput("big_mac_map",
+                                                             height = 720)),
+                                      tabPanel("Charts"),
+                                      tabPanel("Table",
+                                               dataTableOutput("big_mac_data"))
+                                    ))
+                             
+                           )))
 
 server <- function(input, output, session) {
   output$least_expensive <- renderTable(
@@ -110,6 +106,10 @@ server <- function(input, output, session) {
   output$most_expensive <- renderTable(
     data_2019 %>% arrange(-usd_price) %>% top_n(5, usd_price) %>% select("Country" = name, "Price (USD)" = usd_price)
   )
+  
+  output$summary_stats <- renderTable({
+    summary_table(summary(data_2019$usd_price))
+  })
   
   output$big_mac_map <- renderLeaflet({
     leaflet(target) %>%
@@ -124,12 +124,12 @@ server <- function(input, output, session) {
       addLegend(
         pal = pal,
         values = ~data_2019$usd_price,
-        title = "Buckets"
+        title = "Big Mac Price (USD)"
                 ) %>%
       setView(0,30,2)
   })
   output$big_mac_data <- renderDataTable(
-    data_2019
+    data_2019 %>% select(-label)
   )
 }
 
