@@ -107,10 +107,6 @@ server <- function(input, output, session) {
     data_2019 %>% arrange(-usd_price) %>% top_n(5, usd_price) %>% select("Country" = name, "Price (USD)" = usd_price)
   )
   
-  output$summary_stats <- renderTable({
-    summary_table(summary(data_2019$usd_price))
-  })
-  
   output$big_mac_map <- renderLeaflet({
     leaflet(target) %>%
       addTiles() %>%
@@ -129,7 +125,7 @@ server <- function(input, output, session) {
       setView(0,30,2)
   })
   output$big_mac_data <- renderDataTable(
-    data_2019 %>% select(-label)
+    data_2019 %>% select(-label, -iso_a3) %>% mutate(dollar_ex = round(dollar_ex, 4))
   )
 }
 
